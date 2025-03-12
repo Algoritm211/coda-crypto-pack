@@ -1,4 +1,6 @@
 import * as coda from "@codahq/packs-sdk";
+import { COINGECKO_BASE_URL } from "./src/constants";
+import { TopCryptosConfig } from "./src/tables/top-cryptos/top-cryptos-config";
 
 export const pack = coda.newPack();
 
@@ -24,7 +26,7 @@ pack.addFormula({
   resultType: coda.ValueType.String,
   codaType: coda.ValueHintType.Markdown,
   execute: async function ([cryptoName], context) {
-    let url = 'https://api.coingecko.com/api/v3/simple/price';
+    let url = `${COINGECKO_BASE_URL}/api/v3/simple/price`;
 
     url = coda.withQueryParams(url, {
       ids: cryptoName,
@@ -40,64 +42,5 @@ pack.addFormula({
   }
 })
 
-const CryptoTableSchema = coda.makeObjectSchema({
-  properties: {
-    id: { type: coda.ValueType.String, description: "The cryptocurrency ID" },
-    name: { type: coda.ValueType.String, description: "The name of the cryptocurrency" },
-    symbol: { type: coda.ValueType.String, description: "The symbol of the cryptocurrency" },
-    price: { type: coda.ValueType.Number, description: "Current price in USD", codaType: coda.ValueHintType.Currency },
-    marketCap: { type: coda.ValueType.Number, description: "Market capitalization in USD", codaType: coda.ValueHintType.Currency },
-  },
-  displayProperty: 'symbol',
-  featuredProperties: ['name', 'symbol', 'price', 'marketCap'],
-  idProperty: "id",
-})
-
 // Define the sync table
-pack.addSyncTable({
-  name: "TopCryptos",
-  description: "Fetches the top 5 cryptocurrencies by market cap.",
-  identityName: "Crypto",
-  schema: CryptoTableSchema,
-  formula: {
-    name: "SyncTopCryptos",
-    description: "Fetches the top cryptocurrencies by market cap (5 by default).",
-    parameters: [
-      coda.makeParameter({
-      name: 'cryptoCount',
-      description: 'Here you can specify how many cryptocurrencies you want to see in the table (number)',
-      type: coda.ParameterType.Number,
-      optional: true,
-      suggestedValue: 5,
-    })
-    ],
-    execute: async function ([cryptoCount], context) {
-      let url =
-        "https://api.coingecko.com/api/v3/coins/markets";
-
-      url = coda.withQueryParams(url, {
-        per_page: cryptoCount,
-        page: 1,
-        order: 'market_cap_desc',
-        vs_currency: 'usd',
-        json: true,
-      });
-
-      let response = await context.fetcher.fetch({
-        method: "GET",
-        url: url,
-      });
-
-      let data = response.body;
-      let result = data.map((coin: any) => ({
-        id: coin.id,
-        name: coin.name,
-        symbol: coin.symbol.toUpperCase(),
-        price: coin.current_price,
-        marketCap: coin.market_cap,
-      }));
-
-      return { result };
-    },
-  },
-});
+pack.addSyncTable(TopCryptosConfig);
