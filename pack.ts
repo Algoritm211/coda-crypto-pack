@@ -2,6 +2,7 @@ import * as coda from "@codahq/packs-sdk";
 import { COINGECKO_BASE_URL } from "./src/constants";
 import { TopCryptosConfig } from "./src/tables/top-cryptos/top-cryptos-config";
 import { GetExchangeRateActionConfig } from "./src/acitons/get-exchange-rate/get-exchange-rate-config";
+import { CryptoItemCardConfig } from "./src/cards/crypto-item-card/crypto-item-card-config";
 
 export const pack = coda.newPack();
 
@@ -48,3 +49,6 @@ pack.addSyncTable(TopCryptosConfig);
 
 // Define acitons
 pack.addFormula(GetExchangeRateActionConfig)
+
+// Define card
+pack.addFormula(CryptoItemCardConfig);
